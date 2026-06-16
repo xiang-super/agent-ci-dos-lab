@@ -126,11 +126,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Unquoted shell interpolation
+      - name: Double-quoted interpolation (allows $() expansion)
         run: |
-          # Lab-only vulnerable sink. Intentional unquoted use.
-          summary=${{ needs.agent-plan.outputs.summary }}
-          echo done $summary
+          # Lab-only vulnerable sink. Double quotes preserve multi-word input
+          # but still allow $(...) command substitution to fire.
+          summary="${{ needs.agent-plan.outputs.summary }}"
+          echo "done $summary"
 
   yaml-parse-sink:
     name: V9 YAML Parse Break (vulnerable sink)

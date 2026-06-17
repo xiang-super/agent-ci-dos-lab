@@ -4,32 +4,39 @@
 
 ## 项目角色
 
-这是实验中的 `Repo_victim`：在 GitHub 上以公开仓库形态部署 agentic workflow，接受外部账号（`User_attacker`）通过 issue / PR 投放攻击载荷，触发 LLM agent 决策并被下游 workflow 放大。
+这是实验中的 `Repo_victim`：在 GitHub 上以公开仓库形态部署多组真实 agentic workflow 模板，接受外部账号（`User_attacker`）通过 issue / PR 投放攻击载荷。
 
-## 技术栈
+仓库本身伪装成一个小型 TypeScript 日志规范化工具（`log-tidy`）。装饰性的 `src/` / `package.json` / `README.md` 是为了让仓库看起来像真实开源项目（仿 GitInject 的 ephemeral victim 做法）。
 
-- GitHub Actions（issues / pull_request 触发）
-- `actions/ai-inference@v1`（GitHub Models）
-- Python 3 解析 agent JSON 计划
-- Node + TypeScript 项目骨架（让仓库看起来像真实项目，仿 GitInject 做法）
+## 实验装置两层
+
+### L1 真实官方模板（一字不差或仅最小适配）
+- `.github/workflows/summary.yml`：GitHub `actions/starter-workflows` commit a041377 漏洞原版，TaintAWI Case #2 记录。覆盖 V7 / V8 sink 类
+- `.github/workflows/claude-issue-triage.yml`：Anthropic claude-code-action 官方 examples/issue-triage.yml 适配版。覆盖 V4 self-cascade
+- `.github/workflows/claude-pr-review.yml`：Anthropic claude-code-action 官方 examples/pr-review-comprehensive.yml 适配版。覆盖 V14 持久污染
+
+### L2 最小可复现实例（基于 TaintAWI 已扫到的模式）
+- `.github/workflows/triage-pipeline.yml`：用 actions/ai-inference 复刻 P2S amplifier，覆盖 V1 / V2 / V3
+- `.github/workflows/normal-ci.yml`：与 triage-pipeline 共享 concurrency group，配合演示 V3
+
+## API key 配置
+
+仓库 secrets：
+- `ANTHROPIC_API_KEY`：yunwu.ai 中转站 token（喂 claude-code-action）
+- `ANTHROPIC_BASE_URL`：`https://yunwu.ai`（claude-code-action 走中转）
+- `OPENAI_API_KEY`：同 yunwu token
+- `OPENAI_BASE_URL`：`https://yunwu.ai/v1`
+
+本地 `.env`（gitignored）存同样配置，给 `experiments/test_yunwu.sh` 用。
 
 ## 启动方式
 
-仓库本身不需要本地运行。所有实验通过 GitHub Actions 完成：
+仓库本身不运行。所有实验通过外部账号在 GitHub 网页发 issue / PR 触发对应 workflow 完成。
 
-```bash
-# attacker 账号在浏览器中发 issue，触发 workflow
-# 或者 owner 端用 gh CLI 触发：
-gh workflow run agent-ci-lab.yml
-```
+## 实验流程
 
-## 开发说明
-
-- 主入口：`.github/workflows/agent-ci-lab.yml`
-- agent 计划解析：`.github/scripts/parse_agent_plan.py`
-- 上限通过环境变量控制（`MAX_COMPONENTS`、`MAX_ROUNDS`、`MAX_TIMEOUT`、`MAX_TOOLS`）
-- `src/` 下是装饰性的 TS 项目骨架，无功能含义，仅为让仓库看起来真实
+详见 `experiments/README.md` 和 `experiments/attack-payloads.md`。
 
 ## 部署
 
-`gh repo create xiangmaster/agent-ci-dos-lab --public --source=. --push`
+仓库已部署到 `xiangmaster/agent-ci-dos-lab` (public)。本地改动通过 git push 同步。

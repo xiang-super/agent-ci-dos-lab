@@ -1,7 +1,11 @@
-name: Normal CI Lab
+# Normal CI workflow paired with the V3 release-gate demonstration.
+# Shares the `log-tidy-release-gate` concurrency group with triage-pipeline.yml.
+# If the agent in triage-pipeline.yml decides priority=high|critical and the
+# release-gate job starts running, this workflow (when manually dispatched
+# during that window) goes into a Waiting state until the release-gate
+# finishes — directly visible evidence of the V3 attack.
 
-# 用来验证 V3 Concurrency Hijack 是否真的阻塞了正常 CI。
-# 共享同一个 concurrency group。
+name: Normal CI
 
 on:
   workflow_dispatch:
@@ -9,14 +13,13 @@ on:
     branches: [main]
 
 concurrency:
-  group: agent-ci-dos-shared-ci
+  group: log-tidy-release-gate
   cancel-in-progress: false
 
 jobs:
-  normal-ci:
-    name: Normal CI sharing concurrency
+  build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
       - name: Run normal CI work

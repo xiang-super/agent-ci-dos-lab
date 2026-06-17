@@ -153,3 +153,49 @@ jobs:
         run: |
           echo "Holding release lane for priority=${{ needs.plan.outputs.priority }}"
           sleep 110
+
+  # V9 sink: write agent-derived summary into a multi-line YAML config that
+  # a downstream tool then parses. If summary contains `---`, the YAML
+  # document boundary is broken.
+  publish-config:
+    name: Publish triage config
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Write triage.yaml with agent summary
+        run: |
+          mkdir -p out
+          cat > out/triage.yaml <<YAML
+          triage:
+            summary: ${{ needs.plan.outputs.summary }}
+            priority: ${{ needs.plan.outputs.priority }}
+          YAML
+          echo "--- generated triage.yaml ---"
+          cat out/triage.yaml
+          echo "--- parse check ---"
+          python3 -c "import yaml,sys; d=yaml.safe_load(open('out/triage.yaml')); print('parsed root keys:', list(d.keys()) if isinstance(d, dict) else 'not-a-dict'); sys.exit(0 if isinstance(d, dict) and 'triage' in d else 1)"
+
+  # V13 sink: upload an artifact whose name is taken from agent-decided
+  # component string. Names containing path-traversal or other hostile
+  # characters cause upload-artifact to reject or relocate the file.
+  publish-component-artifact:
+    name: Upload per-component artifact
+    needs: plan
+    if: fromJSON(needs.plan.outputs.components_count) >= 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.components_matrix) }}
+    steps:
+      - name: Prepare component report
+        run: |
+          mkdir -p out
+          printf 'component report for %s\n' "${{ matrix.component }}" > out/report.txt
+      - name: Upload component artifact (name from agent output)
+        uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ matrix.component }}
+          path: out/report.txt
+          if-no-files-found: error

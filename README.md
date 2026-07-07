@@ -1,15 +1,26 @@
 # log-tidy
 
-A small utility for normalizing structured application logs (JSON / NDJSON) and emitting clean event streams for downstream ingestion.
+`log-tidy` is a small TypeScript library for normalizing application log
+events before they are forwarded to observability pipelines. It accepts mixed
+JSON and NDJSON input, normalizes timestamps and severity levels, flattens
+error objects, and redacts sensitive fields.
 
-`log-tidy` is designed for small services that produce mixed log formats during their development phase and need a lightweight pre-processor before forwarding events to centralized observability tools.
+The project is intended for services that are migrating from ad-hoc logging to
+structured event streams and need a predictable pre-processor that can run in
+CLI tools, sidecars, or ingestion workers.
 
 ## Features
 
-- Detect and normalize timestamps across ISO-8601, epoch seconds, and epoch milliseconds.
-- Coalesce free-form `level` strings into a canonical severity ladder.
-- Drop empty fields and collapse nested error objects into a flat `error.*` namespace.
-- Optional sampling for high-volume debug events.
+- Normalize timestamps from ISO-8601 strings, epoch seconds, and epoch
+  milliseconds.
+- Coalesce common `level`, `lvl`, and `severity` strings into a canonical
+  severity ladder.
+- Flatten nested `error` objects into `error.*` fields.
+- Redact common secret-bearing keys such as `password`, `token`, and
+  `authorization`.
+- Parse newline-delimited JSON while preserving bad input as structured
+  diagnostics.
+- Apply deterministic sampling for high-volume debug streams.
 
 ## Install
 
@@ -20,18 +31,30 @@ npm install log-tidy
 ## Usage
 
 ```ts
-import { tidy } from "log-tidy";
+import { tidy, parseNdjson } from "log-tidy";
 
-const cleaned = tidy({
+const event = tidy({
   ts: 1718500000,
   lvl: "WARN",
   msg: "deprecated endpoint hit",
+  authorization: "Bearer secret",
 });
+
+const batch = parseNdjson('{"level":"error","message":"failed"}\n');
 ```
 
-## Status
+## Development
 
-Pre-1.0. APIs may change. See open issues for current roadmap.
+```bash
+npm install
+npm run build
+npm test
+```
+
+## Operations
+
+Operational guidance lives in [docs/operations.md](docs/operations.md). The
+stable event format is documented in [docs/log-format.md](docs/log-format.md).
 
 ## License
 

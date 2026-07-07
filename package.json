@@ -2,12 +2,19 @@
   "name": "log-tidy",
   "version": "0.3.1",
   "description": "Lightweight log normalizer for mixed JSON/NDJSON streams.",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc -p .",
-    "test": "node --test test/",
-    "lint": "eslint src/"
+    "test": "npm run build && node --test test/*.test.mjs",
+    "lint": "tsc -p . --noEmit"
   },
   "keywords": ["logs", "json", "ndjson", "observability"],
   "author": "log-tidy contributors",

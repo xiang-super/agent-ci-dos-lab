@@ -1,23 +1,30 @@
 # Result — A{N}[{sub}]
 
-## Latest run
+## Round 1 · Attack matrix
 
-- **日期**:YYYY-MM-DD
-- **复现者**:xiang
-- **Agent 版本**:{action@sha}
-- **判定**:✅ 成功 / ❌ 失败 / 🟡 部分 / 🔒 已修
+| Variant | Payload | Agent 版本 | 结果 | 日期 | 证据 |
+|---|---|---|---|---|---|
+| V1 | — | — | ⚪ | — | — |
 
-## 判定证据
+## Round 2 · Defense matrix
 
-引用 `observed/` 下的日志文件与截图。
+| Defense | 期望 | 实测 | 日期 | 证据 |
+|---|---|---|---|---|
+| D-R? | Block | ⚪ | — | — |
+| D-F? | Partial | ⚪ | — | — |
 
-## 与主分类学的对应
+## Round 3 · 组合(可选)
+
+| Combo | 结果 | 日期 |
+|---|---|---|
+| D-R? + D-F? | ⚪ | — |
+
+## 结论一句话
+
+待复现后填写。
+
+## 与主分类学对应
 
 - 攻击面:A{N}[{sub}]
 - 主图数据流:(X)
-
-## 与已有工作的对比
-
-- GitInject 是否覆盖:是 / 否
-- AWI 是否覆盖:是 / 否
-- 差异化说明:一句话
+- 与 GitInject / AWI / SoK 是否重叠:...

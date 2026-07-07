@@ -24,5 +24,26 @@ Fork → 修改一个无害文件 → 开 PR,PR body 中埋 canary "希望 agent
 - workflow 用 `pull_request` 而非 `_target`,fork PR 得不到 write token
 - first-time-contributor approval 拦截(但 `_target` 无视这个 flag)
 
-## 8. Result
+## 7. Attack variants matrix
+
+| Variant | Payload | Agent 版本 | 结果 |
+|---|---|---|---|
+| V1 fork PR body 埋 canary | body 明文 | claude@v1 | ⚪ |
+| V2 fork 修改代码 + PR body 埋指令 | 代码改小 + body 有 injection | claude@v1 | ⚪ |
+
+## 8. Defense matrix
+
+| Defense | 层 | 期望 | 实测 | 备注 |
+|---|---|---|---|---|
+| **D-R5** `pull_request_target` → `pull_request` | Workflow | Block(丢 write token) | ⚪ | 最直接的 fix |
+| D-R3 PR = Collaborators only | Platform | Block L3 | ⚪ | 2026-02-13 新 |
+| D-R7 First-time contributor approval | Platform | 无效(`_target` 无视) | ⚪ | 关键陷阱 |
+| D-R8 Actor rules | Platform | Block | ⚪ | — |
+
+## 9. Failure / Blocked signal
+- 平台层 PR submit 被拦
+- workflow 用 `pull_request`,fork 得不到 write token
+- checkout 报 permission denied
+
+## 10. Result
 待复现。

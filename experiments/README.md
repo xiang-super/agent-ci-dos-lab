@@ -6,33 +6,46 @@
 
 - **一 PoC 一目录**,严格按 `A{编号}[{子面}]-{slug}` 命名
 - **一 PoC 只 illustrate 一个 A**,禁止跨面混合
-- **每个 PoC 走标准 8 段结构**(见 `_template/README.md`)
+- **每个 PoC 走标准 10 段结构**(见 `_template/README.md`),含 §7 Attack variants + §8 Defense matrix
+- **Defense 编号统一引用 `DEFENSES.md`**,不重复描述
 - **命名与 v2 分类学对齐**,不再使用 V1–V14 旧编号
 
-## 12 格状态总表
+## Round 制的实验流程
 
-| 编号 | 攻击面 | 优先级 | 状态 | 最后运行 | 结果 | 备注 |
-|---|---|---|---|---|---|---|
-| A1 | 事件内容注入 | P2 | ⚪ 未开始 | — | — | 所有 PoC 公共入口,单独跑一个 baseline |
-| A2a | `pull_request_target` 借权 | P1 | ⚪ 未开始 | — | — | fork PR 目标仓 write token 生效 |
-| A2b | `issue_comment` 借状态 | P1 | ⚪ 未开始 | — | — | 编辑评论 TOCTOU |
-| A2c | TOCTOU checkout | P1 | ⚪ 未开始 | — | — | trigger SHA ≠ checkout SHA |
-| A3 | 配置信任提升 | P1 | ⚪ 未开始 | — | — | CLAUDE.md / GEMINI.md / AGENTS.md / .cursorrules |
-| **A4-1** | 恶意 GitHub Action | **P0** | ⚪ 未开始 | — | — | 上游 `uses:` |
-| **A4-2** | 恶意 MCP server | **P0** | ⚪ 未开始 | — | — | 返回值污染 agent context |
-| **A4-3** | 恶意 npm 包 | **P0** | ⚪ 未开始 | — | — | postinstall hook exfil |
-| A5 | Agent 上下文腐化 | P2 | ⚪ 未开始 | — | — | delimiter / 编码 / jailbreak 原语表 |
-| A6a | 工具越权 | P2 | ⚪ 未开始 | — | — | prompt 诱导 Bash gh:* / WebFetch |
-| **A6b** | 沙箱逃逸 | **P0** | ⚪ 未开始 | — | — | 重放 MS Claude Read 案例 |
-| A7a | Output-as-Prompt | P0 | ⚪ 未开始 | — | — | cross-agent 链式扩散 |
-| A7b | Output-as-Sink | P2 | ⚪ 未开始 | — | — | agent 输出→sink 埋雷 |
-| **A7c** | 欺骗人类审核员 | **P0** | ⚪ 未开始 | — | — | 漏报 CVE / 误标 severity |
-| A8 | Sink 解析破 | P1 | ⚪ 未开始 | — | — | shell / YAML / expression re-eval |
-| **A9-1** | Token exfil | **P0** | ⚪ 未开始 | — | — | 泄露到 attacker webhook |
-| **A9-2** | Cache poisoning | P1 | ⚪ 未开始 | — | — | actions/cache 污染 |
-| **A9-3** | Auto-merge 传播 | P1 | ⚪ 未开始 | — | — | agent approve 恶意 PR |
+- **Round 1 Baseline**:所有 defense 保持默认宽松,跑每个 PoC 的 §7 Attack variants 表,验证攻击面成立
+- **Round 2 Defense**:每次只开一个 D-R#/D-F#,重跑 baseline 成功的 variant,填 §8 Defense matrix
+- **Round 3 组合**(可选):把有效 defense 叠加,验证是否有绕过路径
+
+关键文档:
+- 分类学:`../../Agentic-CI-Survey/docs/attack-surface-taxonomy.md`
+- Defense 编号库:`DEFENSES.md`
+- 决策树:`../../Agentic-CI-Survey/assets/fig3-prereq-tree.pdf`
+
+## 12 格状态总表(双维度:攻击成立 + 防御有效)
+
+| 编号 | 攻击面 | P | R1 攻击 | R2 有效 defense | 最后运行 |
+|---|---|---|---|---|---|
+| A1 | 事件内容注入 | P2 | ⚪ | — | — |
+| A2a | `pull_request_target` 借权 | P1 | ⚪ | — | — |
+| A2b | `issue_comment` 借状态 | P1 | ⚪ | — | — |
+| A2c | TOCTOU checkout | P1 | ⚪ | — | — |
+| A3 | 配置信任提升 | P1 | ⚪ | — | — |
+| **A4-1** | 恶意 GitHub Action | **P0** | ⚪ | — | — |
+| **A4-2** | 恶意 MCP server | **P0** | ⚪ | — | — |
+| **A4-3** | 恶意 npm 包 | **P0** | ⚪ | — | — |
+| A5 | Agent 上下文腐化 | P2 | ⚪ | — | — |
+| A6a | 工具越权 | P2 | ⚪ | — | — |
+| **A6b** | 沙箱逃逸 | **P0** | ⚪ | — | — |
+| A7a | Output-as-Prompt | P0 | ⚪ | — | — |
+| A7b | Output-as-Sink | P2 | ⚪ | — | — |
+| **A7c** | 欺骗人类审核员 | **P0** | ⚪ | — | — |
+| A8 | Sink 解析破 | P1 | ⚪ | — | — |
+| **A9-1** | Token exfil | **P0** | ⚪ | — | — |
+| **A9-2** | Cache poisoning | P1 | ⚪ | — | — |
+| **A9-3** | Auto-merge 传播 | P1 | ⚪ | — | — |
 
 图例:⚪ 未开始 / 🟡 进行中 / ✅ 复现成功 / ❌ 复现失败(被防御拦截) / 🔒 已受平台修复
+R1 攻击列填最强 variant 的结果;R2 有效 defense 列填哪个 D 编号能 block(如 `D-R2+D-F2`)。
 
 ## 优先级说明
 

@@ -38,7 +38,30 @@
 - runner 沙箱阻止 postinstall 出网(实际 GitHub runner 允许出网)
 - maintainer 拒绝 merge 引入依赖的 PR
 
-## 8. Result
+## 7. Attack variants matrix
+
+| Variant | 引入方式 | 结果 |
+|---|---|---|
+| V1 fork PR 修改 package.json | 添加 typosquat 依赖 | ⚪ |
+| V2 issue 建议加依赖诱导 maintainer | 社工路径 | ⚪ |
+| V3 transitive 依赖 | 攻击者投毒下层包 | ⚪ |
+
+## 8. Defense matrix
+
+| Defense | 层 | 期望 | 实测 | 备注 |
+|---|---|---|---|---|
+| **D-F5** Dependabot / socket.dev 拦 typosquat | Platform | Block V1 部分 | ⚪ | typosquat 检测很弱 |
+| `npm ci --ignore-scripts` | Workflow | Block postinstall | ⚪ | 一行 fix |
+| package-lock.json integrity 校验 | Workflow | Block 版本被换 | ⚪ | — |
+| D-R7 First-time approval | Platform | Block V1 引入 | ⚪ | 前提走 fork PR |
+| CODEOWNERS 保护 package.json | Platform | Block 修改 | ⚪ | — |
+
+## 9. Failure / Blocked signal
+- `npm ci` 时 integrity check fail
+- postinstall 未执行(--ignore-scripts)
+- webhook 未收 request
+
+## 10. Result
 待复现,填 `result.md`。
 
 ## 隔离

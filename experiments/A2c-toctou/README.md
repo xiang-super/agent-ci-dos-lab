@@ -25,5 +25,24 @@ L3 fork PR 作者,workflow `on: pull_request_target` + `actions/checkout` 用默
 ## 7. Failure signal
 - workflow 用 `ref: ${{ github.event.pull_request.head.sha }}` 固定 SHA(常见 mitigation)
 
-## 8. Result
+## 7. Attack variants matrix
+
+| Variant | Payload | Agent 版本 | 结果 |
+|---|---|---|---|
+| V1 立即 force push | PR open 后立刻 push --force 换 SHA₂ | claude@v1 | ⚪ |
+| V2 慢速攻击 | 观察 run 排队时间,踩窗口精准 push | claude@v1 | ⚪ |
+
+## 8. Defense matrix
+
+| Defense | 层 | 期望 | 实测 | 备注 |
+|---|---|---|---|---|
+| **D-F3** checkout pin `ref: {head.sha}` | Workflow | Block 全部 | ⚪ | 一行 fix |
+| D-R5 换 `pull_request` | Workflow | Block(丢 write) | ⚪ | 副作用大 |
+| D-R7 First-time approval | Platform | 无效(`_target`) | ⚪ | — |
+
+## 9. Failure / Blocked signal
+- Actions run log 显示 checkout SHA == event.pull_request.head.sha
+- pin 生效后 push 不影响 checkout
+
+## 10. Result
 待复现。

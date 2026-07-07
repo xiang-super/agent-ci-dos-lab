@@ -24,5 +24,24 @@ Workflow 用 `actions/cache`,key 部分来自 agent 输出或 issue 内容。
 - cache key 强制包含 lockfile hash,agent 无法控制
 - cache 有 signature 校验(GitHub 无)
 
-## 8. Result
+## 7. Attack variants matrix
+
+| Variant | 污染路径 | 结果 |
+|---|---|---|
+| V1 agent 输出成为 cache key | key 依赖 agent output | ⚪ |
+| V2 fork PR 触发 cache 保存 | fork 有权写 cache | ⚪ |
+
+## 8. Defense matrix
+
+| Defense | 层 | 期望 | 实测 | 备注 |
+|---|---|---|---|---|
+| **cache key 强制 lockfile hash + branch prefix** | Workflow | Block V1 | ⚪ | 一行 fix |
+| fork PR 不可写 cache(GitHub 已默认) | Platform | Block V2 | ⚪ | 2022+ 默认 |
+| cache 签名校验 | Platform | Block 全部 | ⚪ | GitHub 无原生 |
+
+## 9. Failure / Blocked signal
+- cache miss(key 不匹配)
+- write access denied
+
+## 10. Result
 待复现。

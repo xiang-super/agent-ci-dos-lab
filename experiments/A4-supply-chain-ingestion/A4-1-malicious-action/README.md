@@ -42,7 +42,28 @@ workflow `uses:` 引入未验证的第三方 action,该 action 在 job 上下文
 - workflow 引入被 GitHub Advanced Security / CodeQL 扫描拦截(实际不会,GitHub 目前不扫 `uses:` 目标)
 - attacker action 被 GitHub 平台标记删除(需触发过 abuse 才会)
 
-## 8. Result
+## 7. Attack variants matrix
+
+| Variant | 装载路径 | 结果 |
+|---|---|---|
+| V1 直接 `uses:` composite | attacker-account/lgtm-approver-action@v1 | ⚪ |
+| V2 typosquat 官方 action | `anthropies/claude-code-action@v1`(拼错) | ⚪ |
+| V3 SHA pin 但仓被劫持 | pin 到具体 SHA,tag 被后期覆盖 | ⚪ |
+
+## 8. Defense matrix
+
+| Defense | 层 | 期望 | 实测 | 备注 |
+|---|---|---|---|---|
+| Actions policies → Allow only selected actions | Platform | Block 未白名单的 uses | ⚪ | 强防御,少人开 |
+| SHA pin 全部 `uses:` | Workflow | Block V1 V2,部分 V3 | ⚪ | 依赖仓不被劫持 |
+| Dependabot alert on GitHub Actions | Platform | 通知,不 block | ⚪ | 检测 typosquat |
+| D-R7 First-time approval(如果 attacker action 是 fork PR 引入) | Platform | Block 引入 | ⚪ | 前提 attacker 走 PR |
+
+## 9. Failure / Blocked signal
+- workflow parse 报"action not in allowlist"
+- webhook 未收到 request(attacker action 未装载)
+
+## 10. Result
 待复现,填 `result.md`。
 
 ## 隔离

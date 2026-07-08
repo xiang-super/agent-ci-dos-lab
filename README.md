@@ -1,4 +1,4 @@
-# log-tidy
+# log-tidy1
 
 `log-tidy` is a small TypeScript library for normalizing application log
 events before they are forwarded to observability pipelines. It accepts mixed

@@ -20,7 +20,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: P4 input gate
+        id: p4_input_gate
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          if grep -Fq 'P4_PROCESS_MARKER_2026' <<< "$ISSUE_BODY"; then
+            echo "allow=false" >> "$GITHUB_OUTPUT"
+            echo "P4_PROCESS_BLOCKED=true"
+          else
+            echo "allow=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run triage assistant
+        if: steps.p4_input_gate.outputs.allow == 'true'
         uses: anthropics/claude-code-action@v1
         env:
           ANTHROPIC_BASE_URL: ${{ secrets.ANTHROPIC_BASE_URL }}
